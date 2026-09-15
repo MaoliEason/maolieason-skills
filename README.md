@@ -10,6 +10,8 @@ This repository contains general-purpose skill instructions, deterministic scrip
 |---|---|---:|---|
 | [Quant Factor Screener](./skills/quant-factor-screener/SKILL.md) | Finance | 0.1.0 | Beta |
 | [Portfolio Health Check](./skills/portfolio-health-check/SKILL.md) | Finance | 0.1.0 | Beta |
+| [Project Architecture](./skills/project-architecture/SKILL.md) | Engineering | 0.1.0 | Beta |
+| [Database Optimization](./skills/database-optimization/SKILL.md) | Engineering | 0.1.0 | Beta |
 
 ## Use
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Database Optimization"
+  short_description: "Protect data correctness while improving queries"
+  default_prompt: "Use $database-optimization to review correctness, migrations, queries, and indexes for this database change."
+policy:
+  allow_implicit_invocation: true

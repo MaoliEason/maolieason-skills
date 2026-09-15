@@ -1,0 +1,6 @@
+interface:
+  display_name: "Project Architecture"
+  short_description: "Map ownership and cross-module impact before changes"
+  default_prompt: "Use $project-architecture to map ownership, data flow, and impact before implementing this change."
+policy:
+  allow_implicit_invocation: true

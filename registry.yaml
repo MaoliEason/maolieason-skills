@@ -29,4 +29,29 @@ skills:
     side_effects:
       modifies_input: false
       creates_transactions: false
-
+  - name: project-architecture
+    domain: engineering
+    version: 0.1.0
+    status: beta
+    path: skills/project-architecture
+    runtime: instructions
+    permissions:
+      network: false
+      environment: false
+      filesystem_write: false
+    side_effects:
+      modifies_input: false
+      creates_transactions: false
+  - name: database-optimization
+    domain: engineering
+    version: 0.1.0
+    status: beta
+    path: skills/database-optimization
+    runtime: instructions
+    permissions:
+      network: false
+      environment: false
+      filesystem_write: false
+    side_effects:
+      modifies_input: false
+      creates_transactions: false
