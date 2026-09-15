@@ -1,0 +1,7 @@
+interface:
+  display_name: "Portfolio Health Check"
+  short_description: "Auditable concentration and portfolio completeness diagnostics"
+  default_prompt: "Use $portfolio-health-check to diagnose this supplied portfolio and explain the main concentration risks."
+policy:
+  allow_implicit_invocation: true
+

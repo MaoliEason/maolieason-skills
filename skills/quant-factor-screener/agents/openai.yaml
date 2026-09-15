@@ -1,0 +1,7 @@
+interface:
+  display_name: "Quant Factor Screener"
+  short_description: "Deterministic multi-factor ranking with missing-data controls"
+  default_prompt: "Use $quant-factor-screener to rank these supplied candidates and explain the factor contributions."
+policy:
+  allow_implicit_invocation: true
+

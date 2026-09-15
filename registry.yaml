@@ -1,0 +1,32 @@
+schema_version: 1
+repository: MaoliEason/maolieason-skills
+skills:
+  - name: quant-factor-screener
+    domain: finance
+    version: 0.1.0
+    methodology_version: qfs-v1
+    status: beta
+    path: skills/quant-factor-screener
+    runtime: node
+    permissions:
+      network: false
+      environment: false
+      filesystem_write: false
+    side_effects:
+      modifies_input: false
+      creates_transactions: false
+  - name: portfolio-health-check
+    domain: finance
+    version: 0.1.0
+    methodology_version: portfolio-health-v1
+    status: beta
+    path: skills/portfolio-health-check
+    runtime: node
+    permissions:
+      network: false
+      environment: false
+      filesystem_write: false
+    side_effects:
+      modifies_input: false
+      creates_transactions: false
+

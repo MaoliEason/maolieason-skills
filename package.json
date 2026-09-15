@@ -1,0 +1,14 @@
+{
+  "name": "maolieason-skills",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate-skills.mjs",
+    "test": "npm run validate && node --test skills/*/tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
+
