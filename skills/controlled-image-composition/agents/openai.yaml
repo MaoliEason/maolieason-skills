@@ -1,0 +1,6 @@
+interface:
+  display_name: "Controlled Image Composition"
+  short_description: "Lock baselines and gate precise image edits"
+  default_prompt: "Use $controlled-image-composition to edit or combine supplied images with locked source geometry, deterministic compositing, and fail-closed verification."
+policy:
+  allow_implicit_invocation: true
