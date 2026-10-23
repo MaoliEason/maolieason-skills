@@ -16,5 +16,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - run: npm test
-
+      - run: python -m pip install -r skills/controlled-image-composition/requirements.txt
+      - run: python -m unittest discover -s skills/controlled-image-composition/tests -p 'test_*.py' -v

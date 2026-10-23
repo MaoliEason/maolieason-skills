@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "task_id": "SHIP-001",
+  "inputs": {
+    "base_image": {
+      "path": "inputs/base.png",
+      "sha256": "REPLACE_WITH_SHA256"
+    },
+    "source_module": {
+      "path": "inputs/module-source.png",
+      "sha256": "REPLACE_WITH_SHA256"
+    },
+    "adapted_module": {
+      "path": "work/module-adapted.png",
+      "sha256": "REPLACE_WITH_SHA256"
+    },
+    "editable_mask": {
+      "path": "qa/approved-edit-mask.png",
+      "sha256": "REPLACE_WITH_SHA256"
+    },
+    "candidate_image": {
+      "path": "work/candidate.png",
+      "sha256": "REPLACE_WITH_SHA256"
+    },
+    "review_evidence": {
+      "path": "qa/review-evidence.png",
+      "sha256": "REPLACE_WITH_SHA256"
+    }
+  },
+  "geometry": {
+    "base_camera_id": "target-camera-v1",
+    "adapted_module_camera_id": "target-camera-v1",
+    "fit_anchors": [
+      {
+        "name": "platform-back-left",
+        "expected_px": [
+          100,
+          100
+        ],
+        "actual_px": [
+          100,
+          100
+        ]
+      },
+      {
+        "name": "platform-back-right",
+        "expected_px": [
+          200,
+          100
+        ],
+        "actual_px": [
+          200,
+          100
+        ]
+      },
+      {
+        "name": "platform-front-left",
+        "expected_px": [
+          100,
+          180
+        ],
+        "actual_px": [
+          100,
+          180
+        ]
+      },
+      {
+        "name": "stair-foot",
+        "expected_px": [
+          220,
+          240
+        ],
+        "actual_px": [
+          220,
+          240
+        ]
+      }
+    ],
+    "holdout_anchors": [
+      {
+        "name": "wall-joint",
+        "expected_px": [
+          180,
+          150
+        ],
+        "actual_px": [
+          180,
+          150
+        ]
+      },
+      {
+        "name": "stair-top",
+        "expected_px": [
+          205,
+          115
+        ],
+        "actual_px": [
+          205,
+          115
+        ]
+      }
+    ],
+    "fit_rms_limit_px": 2,
+    "holdout_rms_limit_px": 3,
+    "max_edge_error_px": 2,
+    "max_connection_gap_px": 2,
+    "minimum_upper_exit_clearance_px": 40,
+    "platform_edge_max_error_px": 0,
+    "wall_joint_max_error_px": 0,
+    "stair_top_gap_px": 0,
+    "stair_bottom_gap_px": 0,
+    "upper_exit_clearance_px": 60
+  },
+  "structure_checks": {
+    "platform_edge_aligned": true,
+    "wall_joint_aligned": true,
+    "stair_top_connected": true,
+    "stair_bottom_connected": true,
+    "upper_exit_clear": true,
+    "railing_does_not_block_exit": true
+  }
+}

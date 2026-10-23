@@ -8,13 +8,8 @@ skills:
     status: beta
     path: skills/quant-factor-screener
     runtime: node
-    permissions:
-      network: false
-      environment: false
-      filesystem_write: false
-    side_effects:
-      modifies_input: false
-      creates_transactions: false
+    permissions: {network: false, environment: false, filesystem_write: false}
+    side_effects: {modifies_input: false, creates_transactions: false}
   - name: portfolio-health-check
     domain: finance
     version: 0.1.0
@@ -22,36 +17,30 @@ skills:
     status: beta
     path: skills/portfolio-health-check
     runtime: node
-    permissions:
-      network: false
-      environment: false
-      filesystem_write: false
-    side_effects:
-      modifies_input: false
-      creates_transactions: false
+    permissions: {network: false, environment: false, filesystem_write: false}
+    side_effects: {modifies_input: false, creates_transactions: false}
   - name: project-architecture
     domain: engineering
     version: 0.1.0
     status: beta
     path: skills/project-architecture
     runtime: instructions
-    permissions:
-      network: false
-      environment: false
-      filesystem_write: false
-    side_effects:
-      modifies_input: false
-      creates_transactions: false
+    permissions: {network: false, environment: false, filesystem_write: false}
+    side_effects: {modifies_input: false, creates_transactions: false}
   - name: database-optimization
     domain: engineering
     version: 0.1.0
     status: beta
     path: skills/database-optimization
     runtime: instructions
-    permissions:
-      network: false
-      environment: false
-      filesystem_write: false
-    side_effects:
-      modifies_input: false
-      creates_transactions: false
+    permissions: {network: false, environment: false, filesystem_write: false}
+    side_effects: {modifies_input: false, creates_transactions: false}
+  - name: controlled-image-composition
+    domain: creative-tools
+    version: 0.1.0
+    methodology_version: cic-v1
+    status: beta
+    path: skills/controlled-image-composition
+    runtime: python
+    permissions: {network: false, environment: false, filesystem_write: true}
+    side_effects: {modifies_input: false, creates_transactions: false}
