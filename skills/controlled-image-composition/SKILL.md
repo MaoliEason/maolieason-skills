@@ -1,49 +1,37 @@
 ---
 name: controlled-image-composition
-description: Use when editing, replacing, or combining existing images with strict preservation, geometric alignment, fixed-region, or verifiable acceptance requirements. Prefer deterministic compositing and explicit geometry checks over whole-image regeneration.
+description: Use when editing, replacing, or combining existing images with strict preservation, geometric alignment, fixed-region, or verifiable acceptance requirements.
 ---
 
 # Controlled Image Composition
 
-Use this skill whenever a user supplies a baseline image and asks to modify only a region, install one visual module into another image, preserve existing geometry, or verify that a result is correct.
+## Mandatory execution lock
 
-## Non-negotiable execution rule
+For strict edits of supplied images, whole-image generation, text-to-image generation, and generative redraw are forbidden production paths. Do not call an image-generation tool as a substitute for local compositing or model-based rendering. If such a tool is accidentally called, its output is not a candidate and must not be shown or delivered as the task result.
 
-Do not substitute a newly generated lookalike for an edit or composite of the supplied baseline. For strict local edits, do not use whole-image image generation as the final production path. If a separate generated asset is explicitly requested, it may be an intermediate asset only; the final composite must still use the locked baseline and a controlled mask and geometry workflow.
+For three-view requests, do not generate three separate views from prose and do not invent a new design. Front, side, and top views must be orthographic renders from the same reconstructed 3D model, derived from the exact approved source module. If the source is only a perspective image and its geometry cannot be reconstructed reliably, stop and report the missing geometry rather than fabricating a technical drawing.
 
-A written promise is not an execution step. Before editing, identify the actual executable tool and run it. If no executable method can satisfy the constraints, stop and report the blocker rather than producing a plausible-looking substitute.
+Before production, run `scripts/execution_guard.py --manifest <manifest.json>`. If the guard fails, stop. After production, run `scripts/release_gate.py check --manifest <manifest.json>`; release only with explicit approval of the exact candidate hash.
 
 ## Required workflow
 
-1. **Lock inputs.** Save exact copies of the approved baseline, source module, and any approved reference. Record SHA-256, dimensions, file format, and source paths. Never silently replace an input with a similarly named or stale image.
-2. **Classify the geometry.** Decide whether the task is a planar 2D edit, a perspective-matched 2D insert, or a 3D viewpoint change. A 2D rotate, scale, or perspective warp cannot reproduce a new 3D viewpoint for a non-planar object. For viewpoint changes, reconstruct or model the geometry and render it using the baseline camera; do not claim a camera match based on appearance alone.
-3. **Establish correspondence.** Record at least four fit anchors and two held-out validation anchors, in pixel coordinates, with names and evidence. Fit using the declared camera/model; report RMS and maximum error. Do not use the fit anchors as the only validation evidence.
-4. **Define the editable mask.** White pixels are editable; black pixels are frozen. The mask must be approved for the current task, binary, and the same dimensions as the baseline. A proposal mask is not an approved mask.
-5. **Build or adapt the module.** Preserve module design intent while adjusting geometry to the baseline coordinate system. Define platform edges, wall joints, stair top/bottom connections, and the clear path through the upper exit. For 3D work, use a real 3D scene/model and a calibrated camera; for 2D-only work, document the planar assumptions and do not claim 3D correctness.
-6. **Composite onto the locked baseline.** Replace only pixels permitted by the approved mask. Do not regenerate or re-render frozen regions. Keep the candidate separate from the final/release directory.
-7. **Run the release gate.** Run the Python script at skills/controlled-image-composition/scripts/release_gate.py with the check command, the manifest path, and a report path. The script verifies input hashes, output dimensions, frozen-region pixel identity, anchor residuals, geometric thresholds, required structure checks, and review-evidence hashes. A failed check must return a non-zero exit code.
-8. **Human review before release.** Show the exact candidate and inspection crops to the user. Do not create or fabricate an approval file. Only after the user explicitly approves that exact candidate may a human approval file be supplied to the release command.
-9. **Release.** Run the release command with the approval file and a new output path. It must refuse to overwrite an existing release, re-run all checks, bind approval to the exact candidate SHA-256, copy the candidate, and verify the copied file. The release artifact must include its validation report.
-10. **Report truthfully.** Distinguish candidate generation, automated checks, human visual review, and release. Never call a result complete merely because a tool returned an image or a script exited successfully.
+1. Lock exact approved input files with SHA-256, dimensions, formats, and source paths. Never silently substitute a similarly named or stale image.
+2. Classify the task as planar 2D edit, perspective-matched insert, 3D viewpoint change, or orthographic views from one model. A 2D transform cannot create a new view of a non-planar object.
+3. For image installation, record at least four fit anchors and two held-out validation anchors. For orthographic views, record source-image hash, model-source hash, reconstruction assumptions, and known/unknown dimensions.
+4. Use an explicitly approved binary editable mask. White means editable; black means frozen. A proposal mask is not approved.
+5. Build/adapt the module with a real 3D model for viewpoint changes. Define platform edges, wall joints, stair top/bottom connections, and the clear upper-exit path.
+6. Composite deterministically only within the approved mask. For three views, render front, side, and top from one shared model hash using orthographic projection.
+7. Run the execution guard. Strict edits only permit `deterministic_2d_composite` or `3d_model_render_and_composite`. Three-view tasks only permit `orthographic_render_from_single_3d_model`.
+8. Run the release gate. It must verify source hashes, output dimensions, frozen pixels, anchor errors, geometry thresholds, and structure checks.
+9. Show the exact candidate and close-ups to the user. Never fabricate approval. Release requires explicit human approval bound to the exact candidate SHA-256.
+10. Report model reconstruction, candidate creation, automated checks, human review, and release separately.
 
 ## Fail-closed conditions
 
-Stop without releasing if any of these are true:
+Stop without producing a final deliverable if source files/hashes are missing, geometry cannot be reconstructed reliably, method declarations are missing or generative, the mask is unapproved, frozen pixels changed, camera IDs mismatch, anchors fail, required joints or exit checks fail, three views do not share one model hash and orthographic projection, or the exact candidate has not been approved.
 
-- source hashes or dimensions differ from the locked inputs;
-- the approved mask is missing, unapproved, non-binary, or the wrong size;
-- any frozen pixel changed;
-- the base and adapted module do not use the same declared target camera/coordinate-system ID;
-- fit/held-out anchors are insufficient or exceed their error limits;
-- platform-edge, wall-joint, stair-top, stair-bottom, or upper-exit checks fail;
-- evidence is missing;
-- the user has not approved the exact candidate hash;
-- the final output cannot be re-opened and verified.
+## Limitations
 
-## Important limitation
+The guard checks declared methods, hashes, and view-set provenance. It cannot stop ChatGPT from calling a tool outside the controlled runner, and it cannot infer physical truth from a JSON checkbox. The release gate controls only artifacts that pass through it; it does not alter ChatGPT's underlying tool dispatcher. Keep official deliverables inside the controlled runner. Structural judgments require inspection of the actual model/candidate and explicit human review.
 
-The release gate can objectively verify file identity, dimensions, pixel preservation, numeric anchor residuals, declared geometry measurements, and approval binding. It cannot infer from a JSON checkbox whether a railing physically blocks a walkway. Those structural judgments require actual image/model inspection and explicit human review of the exact candidate. Treat self-reported checks as untrusted until that review occurs.
-
-## Deliverable format
-
-Provide the candidate image directly for review, followed by a concise checklist of passed/failed items. Only label it FINAL after the release gate passes and the user has approved the exact candidate. If it fails, report the failing checks and do not disguise it as a finished result.
+Only label an output FINAL after the release gate passes and the user approves that exact candidate. If geometry is unavailable or checks fail, report the blocker; never substitute a generated lookalike.
