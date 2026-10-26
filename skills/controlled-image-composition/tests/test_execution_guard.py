@@ -1,5 +1,6 @@
-import hashlib, tempfile, unittest
+import hashlib, sys, tempfile, unittest
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from execution_guard import GuardError, validate_execution_contract
 
 def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
@@ -23,7 +24,7 @@ class ExecutionGuardTests(unittest.TestCase):
   with self.assertRaisesRegex(GuardError,"forbidden generative"): self.run_guard()
  def test_wrong_method_blocked(self):
   self.m["execution"]["method"]="prompt_only"
-  with self.assertRaisesRegex(GuardError,"same 3D model"): self.run_guard()
+  with self.assertRaisesRegex(GuardError,"one shared 3D model"): self.run_guard()
  def test_different_model_hash_blocked(self):
   self.m["execution"]["views"]["side"]["model_sha256"]="other"
   with self.assertRaisesRegex(GuardError,"same model hash"): self.run_guard()
