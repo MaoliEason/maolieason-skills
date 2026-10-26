@@ -39,5 +39,5 @@ class ExecutionGuardTests(unittest.TestCase):
   with self.assertRaisesRegex(GuardError,"front, side, and top"): self.run_guard()
  def test_wrong_model_hash_blocked(self):
   self.m["execution"]["model_sha256"]="0"*64
-  with self.assertRaisesRegex(GuardError,"model hash"): self.run_guard()
+  with self.assertRaisesRegex(GuardError,"model source"): self.run_guard()
 if __name__=="__main__": unittest.main()
