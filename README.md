@@ -1,6 +1,6 @@
 # MaoliEason Skills
 
-Reusable, auditable skills for AI agents and applications. Each skill combines instructions with executable validation where appropriate.
+Reusable, auditable skills for AI-assisted work. The image workflow is general-purpose: it routes image creation, editing, transformation, restoration, composition, style transfer, analysis, and multi-view derivation. It is not tied to any one subject or project.
 
 ## Skills
 
@@ -10,26 +10,34 @@ Reusable, auditable skills for AI agents and applications. Each skill combines i
 | [Portfolio Health Check](./skills/portfolio-health-check/SKILL.md) | Finance | 0.1.0 | Beta |
 | [Project Architecture](./skills/project-architecture/SKILL.md) | Engineering | 0.1.0 | Beta |
 | [Database Optimization](./skills/database-optimization/SKILL.md) | Engineering | 0.1.0 | Beta |
-| [Controlled Image Composition](./skills/controlled-image-composition/SKILL.md) | Creative tools | 0.1.0 | Beta |
+| [Controlled Image Composition / Workbench](./skills/controlled-image-composition/SKILL.md) | Creative tools | 0.2.0 | Beta |
 
-## Use and validate
+## Generic image task routing
 
-Each directory under `skills/` is self-contained. Read its `SKILL.md`, then load only referenced methodology or contracts.
+Start by validating the task contract:
 
-Run repository checks:
+    python skills/controlled-image-composition/scripts/task_router.py --manifest task.json
 
-```bash
-npm test
-python -m pip install -r skills/controlled-image-composition/requirements.txt
-python -m unittest discover -s skills/controlled-image-composition/tests -p 'test_*.py' -v
-```
+A route approval is not proof that an image was produced. Use a method-specific adapter and verify the artifact.
 
-The controlled image composition skill includes a fail-closed candidate validation and release gate. Technical checks do not replace visual review; a separate human approval must bind to the exact candidate SHA-256.
+The deterministic runner currently supports rotation and masked compositing:
 
-## Safety
+    python skills/controlled-image-composition/scripts/controlled_image_runner.py run --manifest task.json
+    python skills/controlled-image-composition/scripts/controlled_image_runner.py verify --receipt work/run_receipt.json
 
-- Use synthetic data in examples and tests.
-- Never commit credentials, private project context, production logs, or user data.
-- Pin a released version or commit when integrating a skill into another project.
+For exact local edits, use the execution guard and release gate. For true 3D viewpoint changes, a real model reconstruction/render adapter is still required; the router is not that adapter.
+
+## Validate
+
+    npm test
+    python -m pip install -r skills/controlled-image-composition/requirements.txt
+    python -m unittest discover -s skills/controlled-image-composition/tests -p 'test_*.py' -v
+
+## Safety and provenance
+
+- Use exact input hashes and task-specific approved masks.
+- Do not store credentials, private context, or production user data in fixtures.
+- Never claim exact preservation unless pixels/geometry were checked.
+- Pin a released version or commit when integrating a skill elsewhere.
 
 Licensed under Apache-2.0.
