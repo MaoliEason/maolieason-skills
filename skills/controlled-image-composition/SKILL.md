@@ -7,6 +7,8 @@ description: Use when editing, replacing, or combining existing images with stri
 
 ## Mandatory execution lock
 
+For supported deterministic 2D operations, use `scripts/controlled_image_runner.py` as the only image-production entry point. It has no image-generation integration and rejects non-allow-listed operations. Run it with a locked JSON manifest; verify the resulting receipt before presenting the output. Do not call a separate generative tool and label its result as produced by this runner.
+
 For strict edits of supplied images, whole-image generation, text-to-image generation, and generative redraw are forbidden production paths. Do not call an image-generation tool as a substitute for local compositing or model-based rendering. If such a tool is accidentally called, its output is not a candidate and must not be shown or delivered as the task result.
 
 For three-view requests, do not generate three separate views from prose and do not invent a new design. Front, side, and top views must be orthographic renders from the same reconstructed 3D model, derived from the exact approved source module. If the source is only a perspective image and its geometry cannot be reconstructed reliably, stop and report the missing geometry rather than fabricating a technical drawing.
