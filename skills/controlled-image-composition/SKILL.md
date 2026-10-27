@@ -1,39 +1,50 @@
 ---
 name: controlled-image-composition
-description: Use when editing, replacing, or combining existing images with strict preservation, geometric alignment, fixed-region, or verifiable acceptance requirements.
+description: Route and execute image creation, editing, transformation, restoration, composition, and multi-view derivation with method-specific controls and verifiable acceptance.
 ---
 
-# Controlled Image Composition
+# Controlled Image Workbench
 
-## Mandatory execution lock
+This is a general-purpose image workflow, not a stair-generation tool. It covers people, animals, products, architecture, vehicles, posters, diagrams, and other image subjects. Select the method from the user's actual intent and preservation requirements.
 
-For supported deterministic 2D operations, use `scripts/controlled_image_runner.py` as the only image-production entry point. It has no image-generation integration and rejects non-allow-listed operations. Run it with a locked JSON manifest; verify the resulting receipt before presenting the output. Do not call a separate generative tool and label its result as produced by this runner.
+## Choose the method from the task
 
-For strict edits of supplied images, whole-image generation, text-to-image generation, and generative redraw are forbidden production paths. Do not call an image-generation tool as a substitute for local compositing or model-based rendering. If such a tool is accidentally called, its output is not a candidate and must not be shown or delivered as the task result.
+- Create from scratch: image generation is appropriate when there is no fixed baseline to preserve.
+- Edit an existing image: lock the baseline and identify the allowed edit region. Use deterministic operations for exact edits; use an image-edit model only when explicitly requested and the user accepts that unchanged pixels or geometry may not be preserved exactly.
+- Transform an existing image: use deterministic crop, rotate, resize, perspective, or color operations when sufficient.
+- Compose multiple images: lock the base image, source module, and approved mask; preserve pixels outside the mask.
+- Change a non-planar object's viewpoint or derive front/side/top views: use one reconstructed 3D model and calibrated camera or orthographic projections. A 2D rotate/scale cannot create a true new view of a 3D object.
+- Restore or style-transfer: use the explicitly requested method and disclose where generative reconstruction may alter source details.
+- Analyze an image: inspect and report; do not create a replacement unless requested.
 
-For three-view requests, do not generate three separate views from prose and do not invent a new design. Front, side, and top views must be orthographic renders from the same reconstructed 3D model, derived from the exact approved source module. If the source is only a perspective image and its geometry cannot be reconstructed reliably, stop and report the missing geometry rather than fabricating a technical drawing.
+Do not use "never generate images" as a universal rule. Never substitute generation for a requested controlled edit, and never claim exact preservation unless verified.
 
-Before production, run `scripts/execution_guard.py --manifest <manifest.json>`. If the guard fails, stop. After production, run `scripts/release_gate.py check --manifest <manifest.json>`; release only with explicit approval of the exact candidate hash.
+## Mandatory preflight
+
+For manifest-based work, run scripts/task_router.py before selecting an adapter. It checks task/method agreement, locked input hashes, strict-preservation constraints, approved masks, and shared-model orthographic view requirements.
+
+For supported deterministic 2D operations, use scripts/controlled_image_runner.py. It currently supports allow-listed rotation and masked composition. It does not implement 3D rendering or generative creation.
+
+For strict edits, also run scripts/execution_guard.py and scripts/release_gate.py. For any other task family, use the matching implemented adapter. Do not imply a method is implemented merely because the router recognizes the task. If the required adapter is unavailable, stop and report the gap rather than silently falling back.
 
 ## Required workflow
 
-1. Lock exact approved input files with SHA-256, dimensions, formats, and source paths. Never silently substitute a similarly named or stale image.
-2. Classify the task as planar 2D edit, perspective-matched insert, 3D viewpoint change, or orthographic views from one model. A 2D transform cannot create a new view of a non-planar object.
-3. For image installation, record at least four fit anchors and two held-out validation anchors. For orthographic views, record source-image hash, model-source hash, reconstruction assumptions, and known/unknown dimensions.
-4. Use an explicitly approved binary editable mask. White means editable; black means frozen. A proposal mask is not approved.
-5. Build/adapt the module with a real 3D model for viewpoint changes. Define platform edges, wall joints, stair top/bottom connections, and the clear upper-exit path.
-6. Composite deterministically only within the approved mask. For three views, render front, side, and top from one shared model hash using orthographic projection.
-7. Run the execution guard. Strict edits only permit `deterministic_2d_composite` or `3d_model_render_and_composite`. Three-view tasks only permit `orthographic_render_from_single_3d_model`.
-8. Run the release gate. It must verify source hashes, output dimensions, frozen pixels, anchor errors, geometry thresholds, and structure checks.
-9. Show the exact candidate and close-ups to the user. Never fabricate approval. Release requires explicit human approval bound to the exact candidate SHA-256.
-10. Report model reconstruction, candidate creation, automated checks, human review, and release separately.
+1. Identify the intended output: new image, edit, transform, composite, true viewpoint change, restoration, style transfer, or analysis.
+2. Lock exact inputs by path, dimensions, format, and SHA-256; never substitute stale or lookalike files.
+3. Record frozen and editable regions. Exact local edits require an explicitly approved binary mask.
+4. Run the task router and choose only an implemented method.
+5. Execute through the method-specific adapter and record the actual method/tools used. Preflight is not execution.
+6. Verify readability, dimensions, hashes, pixel preservation where required, geometric correspondence, and task-specific acceptance criteria.
+7. Show the exact candidate and relevant close-ups for human review. Never fabricate approval.
+8. Release only after required checks and explicit approval bound to the exact candidate hash.
+9. Report routing, execution, automated verification, human review, and release separately.
 
 ## Fail-closed conditions
 
-Stop without producing a final deliverable if source files/hashes are missing, geometry cannot be reconstructed reliably, method declarations are missing or generative, the mask is unapproved, frozen pixels changed, camera IDs mismatch, anchors fail, required joints or exit checks fail, three views do not share one model hash and orthographic projection, or the exact candidate has not been approved.
+Stop if sources are missing or stale, the required adapter is unavailable, the method conflicts with task intent, a strict edit routes to generation, an approved mask is missing, frozen pixels changed, geometry checks fail, or required review has not occurred.
 
-## Limitations
+## Limits
 
-The guard checks declared methods, hashes, and view-set provenance. It cannot stop ChatGPT from calling a tool outside the controlled runner, and it cannot infer physical truth from a JSON checkbox. The release gate controls only artifacts that pass through it; it does not alter ChatGPT's underlying tool dispatcher. Keep official deliverables inside the controlled runner. Structural judgments require inspection of the actual model/candidate and explicit human review.
+The router only guards work that passes through the controlled workflow. It cannot prevent ChatGPT's platform-level dispatcher from calling tools outside this runner. It also cannot prove physical structure from a JSON checkbox. Official outputs must come from a controlled adapter; structural claims require inspection of the actual model or candidate.
 
-Only label an output FINAL after the release gate passes and the user approves that exact candidate. If geometry is unavailable or checks fail, report the blocker; never substitute a generated lookalike.
+Show the actual result when one exists. State task type, method executed, checks passed/failed, and whether the result is a candidate or approved final. Never label a plan, prompt, mock-up, or generated lookalike as a completed controlled edit.
