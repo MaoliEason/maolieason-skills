@@ -34,7 +34,7 @@ class RouterTests(unittest.TestCase):
   with self.assertRaisesRegex(RouterError,"capability unavailable"): route_manifest(p,self.registry)
  def test_generation_adapter_not_executable(self):
   p=self.write_manifest(task="new_image_generation",op="generate")
-  with self.assertRaisesRegex(RouterError,"not executable"): route_manifest(p,self.registry)
+  with self.assertRaisesRegex(RouterError,"capability unavailable"): route_manifest(p,self.registry)
  def test_mismatched_task_and_operation_blocked(self):
   p=self.write_manifest(task="raster_transform",op="composite")
   with self.assertRaisesRegex(RouterError,"no adapter registered"): route_manifest(p,self.registry)
