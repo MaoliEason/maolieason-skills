@@ -1,39 +1,76 @@
 ---
 name: controlled-image-composition
-description: Use when editing, replacing, or combining existing images with strict preservation, geometric alignment, fixed-region, or verifiable acceptance requirements.
+description: General controlled image-production workflow for precise edits, compositing, transformations, reconstruction, rendering, and verification while preserving user-approved constraints.
 ---
 
-# Controlled Image Composition
+# Controlled Image Production
 
-## Mandatory execution lock
+This Skill is a **general-purpose controlled image-production workflow**. It is not tied to SHIP-001, staircases, spacecraft interiors, or any single asset type. Those are example tasks and regression cases, not the scope of the project.
 
-For supported deterministic 2D operations, use `scripts/controlled_image_runner.py` as the only image-production entry point. It has no image-generation integration and rejects non-allow-listed operations. Run it with a locked JSON manifest; verify the resulting receipt before presenting the output. Do not call a separate generative tool and label its result as produced by this runner.
+Its job is to:
+- classify the actual image task;
+- choose a method and tool that can meet the user's constraints;
+- lock the source of truth and preserve frozen regions;
+- run a reproducible operation through a known execution path;
+- inspect the actual result and reject failures;
+- release only the exact candidate that has passed the required checks.
 
-For strict edits of supplied images, whole-image generation, text-to-image generation, and generative redraw are forbidden production paths. Do not call an image-generation tool as a substitute for local compositing or model-based rendering. If such a tool is accidentally called, its output is not a candidate and must not be shown or delivered as the task result.
+## Mandatory execution rule
 
-For three-view requests, do not generate three separate views from prose and do not invent a new design. Front, side, and top views must be orthographic renders from the same reconstructed 3D model, derived from the exact approved source module. If the source is only a perspective image and its geometry cannot be reconstructed reliably, stop and report the missing geometry rather than fabricating a technical drawing.
+Do not treat a written plan, a Skill invocation, a generated preview, or a passing synthetic test as proof that a real task was completed. Run the selected tool on the actual input files and inspect its outputs.
 
-Before production, run `scripts/execution_guard.py --manifest <manifest.json>`. If the guard fails, stop. After production, run `scripts/release_gate.py check --manifest <manifest.json>`; release only with explicit approval of the exact candidate hash.
+For strict edits of supplied images, whole-image generation, text-to-image generation, and generative redraw are forbidden as substitutes for local editing, deterministic compositing, or model-based rendering. A generated asset may be used only when the task explicitly requests generation; it must not be represented as a pixel-preserving edit of an existing image.
+
+For supported deterministic 2D operations, use `scripts/controlled_image_runner.py` as the production entry point. It currently supports rotation and masked compositing, verifies locked inputs, refuses overwrites, and writes a hash-bound receipt. Do not claim that this runner supports capabilities it does not implement.
+
+## Task routing
+
+Classify each task before selecting a tool:
+
+1. **New image generation:** the user explicitly wants a new image or concept. Use a generative image tool and evaluate its output against the brief.
+2. **Deterministic 2D transform:** rotate, crop, resize, flip, or apply a known transform. Use a deterministic raster/vector tool and preserve source provenance.
+3. **Local edit/composite:** remove, replace, or add an element while freezing the rest. Use a precise mask, layers, and pixel-difference checks.
+4. **Perspective or planar alignment:** establish control points and apply a homography or other declared transform. Report residual errors and assumptions.
+5. **3D reconstruction/viewpoint change:** reconstruct or edit a real 3D model, calibrate the target camera, then render from that camera. A 2D rotation cannot create a new view of a non-planar object.
+6. **Orthographic views/multi-view consistency:** produce front, side, and top views from one shared model and orthographic cameras. Do not independently generate each view from prose.
+7. **Diagram/vector/document graphics:** use the appropriate structured drawing or vector tool where geometry, text, or editability matters.
+8. **Unknown or unsupported task:** stop at the capability boundary and state what input/tool is missing. Never substitute a visually plausible but technically different output.
 
 ## Required workflow
 
-1. Lock exact approved input files with SHA-256, dimensions, formats, and source paths. Never silently substitute a similarly named or stale image.
-2. Classify the task as planar 2D edit, perspective-matched insert, 3D viewpoint change, or orthographic views from one model. A 2D transform cannot create a new view of a non-planar object.
-3. For image installation, record at least four fit anchors and two held-out validation anchors. For orthographic views, record source-image hash, model-source hash, reconstruction assumptions, and known/unknown dimensions.
-4. Use an explicitly approved binary editable mask. White means editable; black means frozen. A proposal mask is not approved.
-5. Build/adapt the module with a real 3D model for viewpoint changes. Define platform edges, wall joints, stair top/bottom connections, and the clear upper-exit path.
-6. Composite deterministically only within the approved mask. For three views, render front, side, and top from one shared model hash using orthographic projection.
-7. Run the execution guard. Strict edits only permit `deterministic_2d_composite` or `3d_model_render_and_composite`. Three-view tasks only permit `orthographic_render_from_single_3d_model`.
-8. Run the release gate. It must verify source hashes, output dimensions, frozen pixels, anchor errors, geometry thresholds, and structure checks.
-9. Show the exact candidate and close-ups to the user. Never fabricate approval. Release requires explicit human approval bound to the exact candidate SHA-256.
-10. Report model reconstruction, candidate creation, automated checks, human review, and release separately.
+1. Lock exact source files with SHA-256, dimensions, formats, and paths. Never silently substitute a similarly named or stale image.
+2. Write down task type, approved invariants, editable regions, target output, and acceptance criteria.
+3. Confirm the selected tool actually supports the needed operation. If not, stop before producing an artifact.
+4. For geometry-dependent tasks, record control points/anchors and distinguish fit points from held-out validation points.
+5. Use an explicitly approved binary editable mask for pixel-preserving composites. White means editable; black means frozen.
+6. Execute through the adapter appropriate to the task. Each adapter must declare its capabilities and reject unsupported operations.
+7. Run task-specific validation: hashes and pixel preservation for raster edits; geometric residuals for alignment; topology, camera, and connection checks for 3D; text/shape checks for vector or diagram outputs.
+8. Keep candidates separate from released outputs. Show the exact candidate to the user for visual review.
+9. Release only after automated checks pass and, when required, the user approves the exact candidate hash.
+10. Report what was actually run, what passed, what failed, and what remains unverified.
 
 ## Fail-closed conditions
 
-Stop without producing a final deliverable if source files/hashes are missing, geometry cannot be reconstructed reliably, method declarations are missing or generative, the mask is unapproved, frozen pixels changed, camera IDs mismatch, anchors fail, required joints or exit checks fail, three views do not share one model hash and orthographic projection, or the exact candidate has not been approved.
+Stop without claiming completion if source files are missing or stale, the method cannot meet the task's constraints, a required adapter is absent, a frozen pixel changes, geometric validation fails, a result cannot be reproduced, or required approval is missing.
 
-## Limitations
+## Current capability boundary
 
-The guard checks declared methods, hashes, and view-set provenance. It cannot stop ChatGPT from calling a tool outside the controlled runner, and it cannot infer physical truth from a JSON checkbox. The release gate controls only artifacts that pass through it; it does not alter ChatGPT's underlying tool dispatcher. Keep official deliverables inside the controlled runner. Structural judgments require inspection of the actual model/candidate and explicit human review.
+The deterministic runner currently supports only:
+- image rotation;
+- binary-mask compositing onto a locked baseline;
+- SHA-256 provenance receipts and receipt verification.
 
-Only label an output FINAL after the release gate passes and the user approves that exact candidate. If geometry is unavailable or checks fail, report the blocker; never substitute a generated lookalike.
+The runner does not yet perform general 3D reconstruction, camera calibration, object segmentation, content-aware removal, or orthographic rendering. Those capabilities must be implemented as separate adapters with their own tests before being used in production. If a task requires one of them, do not bypass the limitation by calling a generative tool and describing it as a deterministic result.
+
+The execution gate controls artifacts that pass through the controlled runner; it does not alter ChatGPT's underlying tool dispatcher. Therefore, official deliverables must be produced and verified by the controlled workflow, not merely by an unrelated tool call.
+
+## Reporting format
+
+For each task, report:
+- **Method selected**
+- **Actual execution performed**
+- **Validation results**
+- **Candidate/release status**
+- **Known limitations**
+
+Never say “done” when only a plan, prompt, or unverified preview exists.
