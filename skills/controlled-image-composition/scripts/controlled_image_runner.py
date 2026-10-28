@@ -47,6 +47,10 @@ def run(manifest_path):
     if m.get("schema_version") != 1: raise RunnerError("schema_version must be 1")
     op = m.get("operation")
     if op not in ALLOWED: raise RunnerError(f"operation {op!r} is not allow-listed; generative redraw is not supported")
+    task_type = m.get("task_type")
+    expected_task_type = {"rotate":"raster_transform","crop":"raster_transform","resize":"raster_transform","flip":"raster_transform","perspective_warp":"planar_alignment","composite":"local_composite"}[op]
+    if task_type != expected_task_type:
+        raise RunnerError(f"task_type must be {expected_task_type!r} for operation {op!r}")
     inputs, params = m.get("inputs", {}), m.get("parameters", {})
     out_path = path_under(root, m.get("output"))
     receipt_path = path_under(root, m.get("receipt", "work/run_receipt.json"))
