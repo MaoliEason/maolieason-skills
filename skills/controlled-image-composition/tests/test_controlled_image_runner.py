@@ -16,7 +16,7 @@ class RunnerTests(unittest.TestCase):
  def tearDown(self): self.t.cleanup()
  def manifest(self, op="composite"):
   files={"base_image":"inputs/base.png","module_image":"inputs/module.png","approved_mask":"qa/mask.png"}
-  if op=="rotate": files={"source_image":"inputs/module.png"}
+  if op!="composite": files={"source_image":"inputs/module.png"}
   m={"schema_version":1,"task_id":"test","task_type":("local_composite" if op=="composite" else "planar_alignment" if op=="perspective_warp" else "raster_transform"),"operation":op,"inputs":{k:{"path":v,"sha256":sha(self.r/v)} for k,v in files.items()},"parameters":{"angle_degrees":17,"expand":True,"resampling":"bicubic"},"output":"work/candidate.png","receipt":"work/run_receipt.json"}
   p=self.r/"task.json"; p.write_text(json.dumps(m)); return p
  def test_masked_composite_and_receipt(self):
