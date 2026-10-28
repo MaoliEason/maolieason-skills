@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "registry_version": "1.1.0",
+  "adapters": [
+    {
+      "id": "raster.rotate",
+      "task_type": "raster_transform",
+      "operations": [
+        "rotate"
+      ],
+      "status": "supported",
+      "executor": "controlled_image_runner"
+    },
+    {
+      "id": "raster.crop",
+      "task_type": "raster_transform",
+      "operations": [
+        "crop"
+      ],
+      "status": "supported",
+      "executor": "controlled_image_runner"
+    },
+    {
+      "id": "raster.resize",
+      "task_type": "raster_transform",
+      "operations": [
+        "resize"
+      ],
+      "status": "supported",
+      "executor": "controlled_image_runner"
+    },
+    {
+      "id": "raster.flip",
+      "task_type": "raster_transform",
+      "operations": [
+        "flip"
+      ],
+      "status": "supported",
+      "executor": "controlled_image_runner"
+    },
+    {
+      "id": "raster.perspective_warp",
+      "task_type": "planar_alignment",
+      "operations": [
+        "perspective_warp"
+      ],
+      "status": "supported",
+      "executor": "controlled_image_runner",
+      "limitations": [
+        "Caller must provide validated perspective coefficients; this adapter does not estimate a homography."
+      ]
+    },
+    {
+      "id": "raster.masked_composite",
+      "task_type": "local_composite",
+      "operations": [
+        "composite"
+      ],
+      "status": "supported",
+      "executor": "controlled_image_runner"
+    },
+    {
+      "id": "generation.external",
+      "task_type": "new_image_generation",
+      "operations": [
+        "generate"
+      ],
+      "status": "external_only",
+      "executor": null,
+      "reason": "Not available in deterministic runner; only use an explicit generation tool for a request to create a new image, never as a substitute for editing."
+    },
+    {
+      "id": "vision.segmentation",
+      "task_type": "object_segmentation",
+      "operations": [
+        "segment",
+        "remove_object"
+      ],
+      "status": "not_implemented",
+      "executor": null,
+      "reason": "No verified segmentation/inpainting adapter is implemented."
+    },
+    {
+      "id": "scene3d.reconstruction",
+      "task_type": "3d_reconstruction",
+      "operations": [
+        "reconstruct",
+        "camera_match",
+        "render"
+      ],
+      "status": "not_implemented",
+      "executor": null,
+      "reason": "General 3D reconstruction and camera calibration are not implemented; stop rather than substitute a generated lookalike."
+    },
+    {
+      "id": "scene3d.orthographic",
+      "task_type": "orthographic_views",
+      "operations": [
+        "render_front_side_top"
+      ],
+      "status": "not_implemented",
+      "executor": null,
+      "reason": "Requires one shared 3D model and orthographic renderer."
+    },
+    {
+      "id": "vector.graphics",
+      "task_type": "vector_graphics",
+      "operations": [
+        "draw",
+        "layout"
+      ],
+      "status": "not_implemented",
+      "executor": null,
+      "reason": "A verified vector/structured-layout adapter is not implemented."
+    }
+  ]
+}

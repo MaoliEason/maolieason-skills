@@ -21,7 +21,7 @@ Do not treat a written plan, a Skill invocation, a generated preview, or a passi
 
 For strict edits of supplied images, whole-image generation, text-to-image generation, and generative redraw are forbidden as substitutes for local editing, deterministic compositing, or model-based rendering. A generated asset may be used only when the task explicitly requests generation; it must not be represented as a pixel-preserving edit of an existing image.
 
-For supported deterministic 2D operations, use `scripts/controlled_image_runner.py` as the production entry point. It currently supports rotation and masked compositing, verifies locked inputs, refuses overwrites, and writes a hash-bound receipt. Do not claim that this runner supports capabilities it does not implement.
+For supported deterministic raster operations, use `scripts/task_router.py run --manifest <manifest.json>` as the production entry point. The router reads `adapters/registry.json`, dispatches only to an explicitly supported adapter, and refuses unsupported routes instead of falling back to a different method. The current runner supports rotation, crop, resize, flip, caller-calibrated planar perspective warp, and binary-mask compositing. Every run verifies locked inputs, refuses overwrites, and writes a hash-bound receipt. Do not claim that this runner supports capabilities it does not implement.
 
 ## Task routing
 
@@ -55,12 +55,13 @@ Stop without claiming completion if source files are missing or stale, the metho
 
 ## Current capability boundary
 
-The deterministic runner currently supports only:
-- image rotation;
+The deterministic raster runner currently supports:
+- image rotation, crop, resize, and horizontal/vertical flip;
+- a caller-calibrated perspective warp (it does not estimate the homography or camera parameters);
 - binary-mask compositing onto a locked baseline;
 - SHA-256 provenance receipts and receipt verification.
 
-The runner does not yet perform general 3D reconstruction, camera calibration, object segmentation, content-aware removal, or orthographic rendering. Those capabilities must be implemented as separate adapters with their own tests before being used in production. If a task requires one of them, do not bypass the limitation by calling a generative tool and describing it as a deterministic result.
+The adapter registry also explicitly records capabilities that are not implemented: object segmentation/inpainting, general 3D reconstruction, camera calibration, and orthographic rendering. The router must reject these tasks. Implement each as a separate adapter with real execution and regression tests before production use. If a task requires an unavailable adapter, do not bypass the limitation by calling a generative tool and describing it as a deterministic result.
 
 The execution gate controls artifacts that pass through the controlled runner; it does not alter ChatGPT's underlying tool dispatcher. Therefore, official deliverables must be produced and verified by the controlled workflow, not merely by an unrelated tool call.
 

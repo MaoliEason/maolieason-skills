@@ -45,7 +45,9 @@ python -m pip install -r skills/controlled-image-composition/requirements.txt
 python -m unittest discover -s skills/controlled-image-composition/tests -p 'test_*.py' -v
 ```
 
-The controlled image composition skill includes a fail-closed candidate validation and release gate. Technical checks do not replace visual review; a separate human approval must bind to the exact candidate SHA-256.
+The controlled image composition skill includes a task router, adapter registry, deterministic raster runner, fail-closed validation, and provenance receipts. Supported operations currently include rotate, crop, resize, flip, caller-calibrated planar perspective warp, and masked composite. The router explicitly rejects unimplemented 3D reconstruction, camera calibration, segmentation/inpainting, and orthographic-render tasks rather than substituting another method. Technical checks do not replace visual review; a separate human approval must bind to the exact candidate SHA-256.
+
+List available adapters with `python skills/controlled-image-composition/scripts/task_router.py list`. Run a task with `python skills/controlled-image-composition/scripts/task_router.py run --manifest <task.json>` and verify its receipt with `python skills/controlled-image-composition/scripts/task_router.py verify --receipt <receipt.json>`.
 
 ## Safety
 
