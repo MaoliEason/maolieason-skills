@@ -27,8 +27,10 @@ def resolve_route(manifest, registry):
             raise RouterError(f"capability unavailable for {task}: {known.get('reason','adapter not implemented')}")
         raise RouterError(f"no adapter registered for task_type={task!r}, operation={op!r}")
     adapter=found[0]
-    if adapter.get("status") != "supported" or adapter.get("executor") != "controlled_image_runner":
-        raise RouterError(f"adapter {adapter.get('id')} is not executable")
+    if adapter.get("status") != "supported":
+        raise RouterError(f"capability unavailable for {task}: {adapter.get('reason', 'adapter not implemented')}")
+    if adapter.get("executor") != "controlled_image_runner":
+        raise RouterError(f"adapter {adapter.get('id')} has no approved executor")
     return adapter
 
 def route_manifest(manifest_path, registry_path=DEFAULT_REGISTRY):
