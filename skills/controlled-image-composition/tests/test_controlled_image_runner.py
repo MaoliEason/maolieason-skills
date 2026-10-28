@@ -17,7 +17,7 @@ class RunnerTests(unittest.TestCase):
  def manifest(self, op="composite"):
   files={"base_image":"inputs/base.png","module_image":"inputs/module.png","approved_mask":"qa/mask.png"}
   if op=="rotate": files={"source_image":"inputs/module.png"}
-  m={"schema_version":1,"task_id":"test","operation":op,"inputs":{k:{"path":v,"sha256":sha(self.r/v)} for k,v in files.items()},"parameters":{"angle_degrees":17,"expand":True,"resampling":"bicubic"},"output":"work/candidate.png","receipt":"work/run_receipt.json"}
+  m={"schema_version":1,"task_id":"test","task_type":("local_composite" if op=="composite" else "planar_alignment" if op=="perspective_warp" else "raster_transform"),"operation":op,"inputs":{k:{"path":v,"sha256":sha(self.r/v)} for k,v in files.items()},"parameters":{"angle_degrees":17,"expand":True,"resampling":"bicubic"},"output":"work/candidate.png","receipt":"work/run_receipt.json"}
   p=self.r/"task.json"; p.write_text(json.dumps(m)); return p
  def test_masked_composite_and_receipt(self):
   _,rp=run(self.manifest()); self.assertEqual(verify(rp)["status"],"RECEIPT_VERIFIED")
@@ -40,4 +40,24 @@ class RunnerTests(unittest.TestCase):
  def test_tampered_output_detected(self):
   _,rp=run(self.manifest()); Image.new("RGB",(40,30)).save(self.r/"work/candidate.png")
   with self.assertRaisesRegex(RunnerError,"hash differs"): verify(rp)
+
+ def test_crop(self):
+  p=self.manifest("crop"); m=json.loads(p.read_text()); m["parameters"]={"box":[2,3,22,18]}; p.write_text(json.dumps(m))
+  _,rp=run(p); self.assertEqual(verify(rp)["size"],[20,15])
+ def test_resize(self):
+  p=self.manifest("resize"); m=json.loads(p.read_text()); m["parameters"]={"size":[21,17],"resampling":"nearest"}; p.write_text(json.dumps(m))
+  _,rp=run(p); self.assertEqual(verify(rp)["size"],[21,17])
+ def test_flip(self):
+  p=self.manifest("flip"); m=json.loads(p.read_text()); m["parameters"]={"direction":"horizontal"}; p.write_text(json.dumps(m))
+  _,rp=run(p); self.assertEqual(verify(rp)["status"],"RECEIPT_VERIFIED")
+ def test_perspective_warp(self):
+  p=self.manifest("perspective_warp"); m=json.loads(p.read_text()); m["parameters"]={"output_size":[40,30],"coefficients":[1,0,0,0,1,0,0,0],"resampling":"nearest"}; p.write_text(json.dumps(m))
+  _,rp=run(p); self.assertEqual(verify(rp)["size"],[40,30])
+ def test_wrong_task_type_blocked(self):
+  p=self.manifest("crop"); m=json.loads(p.read_text()); m["task_type"]="local_composite"; p.write_text(json.dumps(m))
+  with self.assertRaisesRegex(RunnerError,"task_type must"): run(p)
+ def test_invalid_crop_blocked(self):
+  p=self.manifest("crop"); m=json.loads(p.read_text()); m["parameters"]={"box":[-1,0,20,20]}; p.write_text(json.dumps(m))
+  with self.assertRaisesRegex(RunnerError,"outside"): run(p)
+
 if __name__=="__main__": unittest.main()
