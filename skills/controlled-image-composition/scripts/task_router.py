@@ -4,8 +4,10 @@ import argparse, json, sys
 from pathlib import Path
 try:
     from controlled_image_runner import RunnerError, run, verify
+    from blender_orthographic_runner import run as run_blender_orthographic, verify as verify_blender_orthographic
 except ImportError:
     from .controlled_image_runner import RunnerError, run, verify
+    from .blender_orthographic_runner import run as run_blender_orthographic, verify as verify_blender_orthographic
 
 class RouterError(Exception): pass
 DEFAULT_REGISTRY = Path(__file__).resolve().parents[1] / "adapters" / "registry.json"
@@ -29,7 +31,7 @@ def resolve_route(manifest, registry):
     adapter=found[0]
     if adapter.get("status") != "supported":
         raise RouterError(f"capability unavailable for {task}: {adapter.get('reason', 'adapter not implemented')}")
-    if adapter.get("executor") != "controlled_image_runner":
+    if adapter.get("executor") not in {"controlled_image_runner", "blender_orthographic_runner"}:
         raise RouterError(f"adapter {adapter.get('id')} has no approved executor")
     return adapter
 
@@ -38,7 +40,10 @@ def route_manifest(manifest_path, registry_path=DEFAULT_REGISTRY):
     try: m=json.loads(mp.read_text(encoding="utf-8"))
     except Exception as e: raise RouterError(f"manifest unreadable: {e}") from e
     adapter=resolve_route(m,load_registry(registry_path))
-    receipt,rp=run(mp)
+    if adapter.get("executor") == "blender_orthographic_runner":
+        receipt,rp=run_blender_orthographic(mp)
+    else:
+        receipt,rp=run(mp)
     return {"status":receipt["status"],"adapter_id":adapter["id"],"task_type":m["task_type"],
             "operation":m["operation"],"output":receipt["output"],"receipt":str(rp),
             "release_status":receipt["release_status"]}
@@ -52,7 +57,10 @@ def main():
     try:
         if a.cmd=="list": print(json.dumps(load_registry(a.registry),ensure_ascii=False,indent=2))
         elif a.cmd=="run": print(json.dumps(route_manifest(a.manifest,a.registry),ensure_ascii=False,indent=2))
-        else: print(json.dumps(verify(a.receipt),ensure_ascii=False,indent=2))
+        else:
+            try: result=verify_blender_orthographic(a.receipt)
+            except Exception: result=verify(a.receipt)
+            print(json.dumps(result,ensure_ascii=False,indent=2))
         return 0
     except Exception as e:
         print(json.dumps({"status":"BLOCKED","error":str(e)},ensure_ascii=False,indent=2),file=sys.stderr); return 2

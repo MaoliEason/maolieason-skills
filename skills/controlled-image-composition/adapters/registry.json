@@ -98,9 +98,16 @@
       "operations": [
         "render_front_side_top"
       ],
-      "status": "not_implemented",
-      "executor": null,
-      "reason": "Requires one shared 3D model and orthographic renderer."
+      "status": "supported",
+      "executor": "blender_orthographic_runner",
+      "capabilities": [
+        "renders front, side, top from one existing Blender scene",
+        "validates orthographic camera names",
+        "hash-bound scene and output receipt"
+      ],
+      "limitations": [
+        "Requires a prebuilt .blend scene with named orthographic cameras; does not reconstruct a model from a 2D image."
+      ]
     },
     {
       "id": "vector.graphics",

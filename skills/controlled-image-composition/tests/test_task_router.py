@@ -41,5 +41,7 @@ class RouterTests(unittest.TestCase):
  def test_registry_declares_unsupported_capabilities(self):
   r=load_registry(self.registry); tasks={a["task_type"]:a["status"] for a in r["adapters"]}
   self.assertEqual(tasks["3d_reconstruction"],"not_implemented")
-  self.assertEqual(tasks["orthographic_views"],"not_implemented")
+  self.assertEqual(tasks["orthographic_views"],"supported")
+  a=next(x for x in r["adapters"] if x["task_type"]=="orthographic_views")
+  self.assertEqual(a["executor"],"blender_orthographic_runner")
 if __name__=="__main__": unittest.main()

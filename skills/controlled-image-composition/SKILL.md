@@ -61,7 +61,7 @@ The deterministic raster runner currently supports:
 - binary-mask compositing onto a locked baseline;
 - SHA-256 provenance receipts and receipt verification.
 
-The adapter registry also explicitly records capabilities that are not implemented: object segmentation/inpainting, general 3D reconstruction, camera calibration, and orthographic rendering. The router must reject these tasks. Implement each as a separate adapter with real execution and regression tests before production use. If a task requires an unavailable adapter, do not bypass the limitation by calling a generative tool and describing it as a deterministic result.
+The adapter registry explicitly records capabilities that are not implemented: object segmentation/inpainting, general 3D reconstruction, and automatic camera calibration. Orthographic rendering is supported only when a real Blender .blend scene already exists and contains named orthographic front/side/top cameras; the adapter does not reconstruct a model from a 2D image. The router must reject unavailable tasks. If a task requires an unavailable adapter, do not bypass the limitation by calling a generative tool and describing it as a deterministic result.
 
 The execution gate controls artifacts that pass through the controlled runner; it does not alter ChatGPT's underlying tool dispatcher. Therefore, official deliverables must be produced and verified by the controlled workflow, not merely by an unrelated tool call.
 
